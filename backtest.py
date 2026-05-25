@@ -160,10 +160,10 @@ def _report(ticker_yf: str, df: pd.DataFrame, trades: list[_Trade],
     print()
 
 
-def run_backtest(ticker_yf: str, initial_cash: float, period: str) -> None:
-    print(f"Downloading {ticker_yf} ({period} hourly)…", flush=True)
+def run_backtest(ticker_yf: str, initial_cash: float, period: str, interval: str) -> None:
+    print(f"Downloading {ticker_yf} ({period} {interval})…", flush=True)
     try:
-        df = data_module.fetch_ohlcv(ticker_yf, period=period, interval="1h")
+        df = data_module.fetch_ohlcv(ticker_yf, period=period, interval=interval)
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -183,12 +183,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Backtest the GoldenCross strategy")
     parser.add_argument("ticker", help="yfinance ticker (e.g. VWCE.DE, SPY, QQQ)")
     parser.add_argument(
-        "--period", default="2y",
-        help="History period: 6mo, 1y, 2y, etc. (default: 2y; max for hourly data is 2y)",
+        "--interval", default="1h", choices=["1h", "1d"],
+        help="Candle interval: 1h (default) or 1d. Hourly max is 2y; daily supports up to 10y+.",
+    )
+    parser.add_argument(
+        "--period", default=None,
+        help="History period: 6mo, 1y, 2y, 5y, 10y, etc. Defaults: 2y for 1h, 5y for 1d.",
     )
     parser.add_argument(
         "--cash", type=float, default=5000.0,
         help="Starting capital in EUR (default: 5000)",
     )
     args = parser.parse_args()
-    run_backtest(args.ticker, args.cash, args.period)
+    period = args.period or ("2y" if args.interval == "1h" else "5y")
+    run_backtest(args.ticker, args.cash, period, args.interval)

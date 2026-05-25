@@ -2,31 +2,14 @@
 import json
 import os
 
-import config
-
 INSTRUMENTS_FILE = "instruments.json"
 
 _PLACEHOLDER_NAME = "Default instrument"
 
 
-def _default_instruments() -> list[dict]:
-    import data
-    name = data.get_instrument_name(config.TICKER_YFINANCE)
-    return [
-        {
-            "ticker_t212": config.TICKER_T212,
-            "ticker_yfinance": config.TICKER_YFINANCE,
-            "name": name,
-            "enabled": True,
-        }
-    ]
-
-
 def load_instruments() -> list[dict]:
     if not os.path.exists(INSTRUMENTS_FILE):
-        defaults = _default_instruments()
-        save_instruments(defaults)
-        return defaults
+        return []
     with open(INSTRUMENTS_FILE) as f:
         instruments = json.load(f)
     # Fix placeholder names written before name-lookup was in place

@@ -12,20 +12,16 @@ def isolated_file(tmp_path, monkeypatch):
 
 # --- load / save ---
 
-def test_load_creates_default_when_no_file():
+def test_load_returns_empty_when_no_file():
+    result = instruments.load_instruments()
+    assert result == []
+
+
+def test_load_reads_existing_file():
+    instruments.add_instrument("VWCEd_EQ", "VWCE.DE", "Vanguard FTSE All-World")
     result = instruments.load_instruments()
     assert len(result) == 1
-    assert result[0]["ticker_t212"] is not None
-    assert result[0]["enabled"] is True
-
-
-def test_load_persists_default_to_file(tmp_path, monkeypatch):
-    path = str(tmp_path / "instruments.json")
-    monkeypatch.setattr(instruments, "INSTRUMENTS_FILE", path)
-    instruments.load_instruments()
-    with open(path) as f:
-        data = json.load(f)
-    assert isinstance(data, list)
+    assert result[0]["ticker_t212"] == "VWCEd_EQ"
 
 
 # --- add ---

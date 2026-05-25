@@ -72,8 +72,6 @@ The AI analysis from Together.ai is **logged for later review** but does not ove
 | `T212_MODE` | `demo` or `live` | `demo` |
 | `TOGETHER_API_KEY` | Together.ai API key | required |
 | `AI_MODEL` | Together.ai model name | `meta-llama/Llama-3.3-70B-Instruct-Turbo` |
-| `TICKER_T212` | Trading212 instrument ticker (e.g. `VWCEd_EQ`) | `VWCEd_EQ` |
-| `TICKER_YFINANCE` | yfinance ticker (e.g. `VWCE.DE`) | `VWCE.DE` |
 | `POSITION_FRACTION` | Fraction of free cash to deploy per trade | `0.95` |
 
 ## Broker API Notes

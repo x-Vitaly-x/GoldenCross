@@ -49,8 +49,6 @@ cp .env.example .env
 | `T212_MODE` | `demo` or `live` | `demo` |
 | `TOGETHER_API_KEY` | Together.ai API key | required |
 | `AI_MODEL` | Together.ai model name | `meta-llama/Llama-3.3-70B-Instruct-Turbo` |
-| `TICKER_T212` | Trading212 instrument ticker (e.g. `VWCEd_EQ`) | `VWCEd_EQ` |
-| `TICKER_YFINANCE` | yfinance ticker for the same instrument (e.g. `VWCE.DE`) | `VWCE.DE` |
 | `POSITION_FRACTION` | Fraction of free cash to deploy per BUY signal | `0.95` |
 | `DASHBOARD_TOKEN` | Secret token for dashboard authentication | required |
 

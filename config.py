@@ -16,8 +16,6 @@ T212_BASE_URL: str = (
 TOGETHER_API_KEY: str = os.environ["TOGETHER_API_KEY"]
 AI_MODEL: str = os.getenv("AI_MODEL", "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo")
 
-TICKER_T212: str = os.getenv("TICKER_T212", "VWCE_EQ")
-TICKER_YFINANCE: str = os.getenv("TICKER_YFINANCE", "VWCE.DE")
 POSITION_FRACTION: float = float(os.getenv("POSITION_FRACTION", "0.95"))
 
 DASHBOARD_TOKEN: str = os.getenv("DASHBOARD_TOKEN", "")

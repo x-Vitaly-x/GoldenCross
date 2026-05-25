@@ -42,6 +42,12 @@ def _is_market_open(now: datetime | None = None) -> bool:
     return market_open <= now < market_close
 
 
+def _is_stop_loss_triggered(pos: dict, current_price: float, stop_loss_pct: float = config.STOP_LOSS_PCT) -> bool:
+    """Returns True if price has fallen stop_loss_pct below the entry price."""
+    entry_price = float(pos["entry_price"])
+    return (entry_price - current_price) / entry_price >= stop_loss_pct
+
+
 def run_instrument(instr: dict) -> None:
     """Run one full trading cycle for a single instrument."""
     t212 = instr["ticker_t212"]
@@ -63,6 +69,14 @@ def run_instrument(instr: dict) -> None:
         if indicators["sma_fast"] > indicators["sma_slow"] and indicators["rsi"] < 65:
             signal = "BUY"
             log.info(f"[{t212}] Trend-continuation entry: uptrend with no position, overriding to BUY")
+
+    # Stop-loss override: force SELL if position has fallen beyond the threshold
+    stop_loss_triggered = False
+    if has_position and signal != "SELL" and _is_stop_loss_triggered(pos, indicators["price"]):
+        loss_pct = (float(pos["entry_price"]) - indicators["price"]) / float(pos["entry_price"])
+        log.warning(f"[{t212}] Stop-loss triggered: {loss_pct:.1%} loss (entry={pos['entry_price']}, current={indicators['price']})")
+        signal = "SELL"
+        stop_loss_triggered = True
 
     log.info(
         f"[{t212}] Signal={signal} price={indicators['price']} "
@@ -102,7 +116,7 @@ def run_instrument(instr: dict) -> None:
             f"| P&L: €{pnl:+.2f}"
         )
         tracker.set_position(t212, None)
-        action = "SELL"
+        action = "STOP_LOSS" if stop_loss_triggered else "SELL"
 
     tracker.log_decision(t212, signal, action, indicators, reasoning)
 

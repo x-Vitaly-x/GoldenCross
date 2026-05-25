@@ -17,5 +17,6 @@ TOGETHER_API_KEY: str = os.environ["TOGETHER_API_KEY"]
 AI_MODEL: str = os.getenv("AI_MODEL", "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo")
 
 POSITION_FRACTION: float = float(os.getenv("POSITION_FRACTION", "0.95"))
+STOP_LOSS_PCT: float = float(os.getenv("STOP_LOSS_PCT", "0.10"))
 
 DASHBOARD_TOKEN: str = os.getenv("DASHBOARD_TOKEN", "")

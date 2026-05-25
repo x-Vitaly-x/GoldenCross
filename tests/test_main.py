@@ -3,6 +3,31 @@ from datetime import datetime, timezone
 import main
 
 
+_POS = {"entry_price": "100.00", "quantity": "10.0", "ticker": "X_EQ"}
+
+
+# --- _is_stop_loss_triggered ---
+
+def test_stop_loss_not_triggered_below_threshold():
+    assert main._is_stop_loss_triggered(_POS, 91.0, stop_loss_pct=0.10) is False
+
+
+def test_stop_loss_triggered_at_exact_threshold():
+    assert main._is_stop_loss_triggered(_POS, 90.0, stop_loss_pct=0.10) is True
+
+
+def test_stop_loss_triggered_beyond_threshold():
+    assert main._is_stop_loss_triggered(_POS, 80.0, stop_loss_pct=0.10) is True
+
+
+def test_stop_loss_not_triggered_when_price_rises():
+    assert main._is_stop_loss_triggered(_POS, 110.0, stop_loss_pct=0.10) is False
+
+
+def test_stop_loss_not_triggered_at_entry_price():
+    assert main._is_stop_loss_triggered(_POS, 100.0, stop_loss_pct=0.10) is False
+
+
 def _dt(weekday: int, hour: int, minute: int = 0) -> datetime:
     """Build a UTC datetime on the given weekday (0=Mon … 6=Sun)."""
     # 2024-01-01 is a Monday — offset by weekday to get the right day

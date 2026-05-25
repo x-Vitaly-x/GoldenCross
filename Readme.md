@@ -21,6 +21,7 @@ The strategy is a simple SMA crossover + RSI filter on hourly candles. The bot i
 
 **BUY**: SMA20 crosses above SMA50 AND RSI(14) < 65  
 **SELL**: SMA20 crosses below SMA50 AND RSI(14) > 35  
+**STOP_LOSS**: current price has fallen ≥ `STOP_LOSS_PCT` below entry price (default 10%)  
 **HOLD**: everything else
 
 Single position model: the bot is either 100% deployed in the ETF or 100% cash.
@@ -50,6 +51,7 @@ cp .env.example .env
 | `TOGETHER_API_KEY` | Together.ai API key | required |
 | `AI_MODEL` | Together.ai model name | `meta-llama/Llama-3.3-70B-Instruct-Turbo` |
 | `POSITION_FRACTION` | Fraction of free cash to deploy per BUY signal | `0.95` |
+| `STOP_LOSS_PCT` | Sell if position drops this fraction below entry price | `0.10` |
 | `DASHBOARD_TOKEN` | Secret token for dashboard authentication | required |
 
 ## Running

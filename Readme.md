@@ -1,4 +1,4 @@
-# RogueTrader
+# GoldenCross
 
 An algorithmic ETF trading bot for [Trading212](https://www.trading212.com/) with an AI commentary layer via [Together.ai](https://www.together.ai/).
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-RogueTrader is an algorithmic stock trading bot. It trades ETFs on Trading212 using a rule-based strategy enhanced with AI analysis via Together.ai.
+GoldenCross is an algorithmic stock trading bot. It trades ETFs on Trading212 using a rule-based strategy enhanced with AI analysis via Together.ai.
 
 **Goal**: Validate that algorithmic trading can beat a passive VWCE ETF buy-and-hold strategy on a risk-adjusted basis before committing serious capital.
 

@@ -4,9 +4,10 @@ import json
 import os
 from datetime import datetime, timezone
 
-TRADES_FILE = "logs/trades.csv"
-DECISIONS_FILE = "logs/decisions.csv"
-STATE_FILE = "state.json"
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+TRADES_FILE = os.path.join(_ROOT, "logs", "trades.csv")
+DECISIONS_FILE = os.path.join(_ROOT, "logs", "decisions.csv")
+STATE_FILE = os.path.join(_ROOT, "state.json")
 
 _TRADE_FIELDS = ["timestamp", "action", "ticker", "quantity", "price", "value_eur"]
 _DECISION_FIELDS = [

@@ -2,7 +2,7 @@
 import json
 import os
 
-INSTRUMENTS_FILE = "instruments.json"
+INSTRUMENTS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instruments.json")
 
 _PLACEHOLDER_NAME = "Default instrument"
 

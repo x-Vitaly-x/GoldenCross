@@ -1,0 +1,11 @@
+.venv/
+.env
+.git/
+.claude/
+.DS_Store
+__pycache__/
+*.pyc
+logs/*.csv
+logs/*.log
+state.json
+tests/

@@ -4,8 +4,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-T212_API_KEY: str = os.environ["T212_API_KEY"]
-T212_SECRET_KEY: str = os.environ["T212_SECRET_KEY"]
+
+def _require(key: str) -> str:
+    val = os.getenv(key)
+    if not val:
+        raise RuntimeError(
+            f"Missing required env var: {key} — copy .env.example to .env and fill it in"
+        )
+    return val
+
+
+T212_API_KEY: str = _require("T212_API_KEY")
+T212_SECRET_KEY: str = _require("T212_SECRET_KEY")
 T212_MODE: str = os.getenv("T212_MODE", "demo")
 T212_BASE_URL: str = (
     "https://demo.trading212.com/api/v0"
@@ -13,7 +23,7 @@ T212_BASE_URL: str = (
     else "https://live.trading212.com/api/v0"
 )
 
-TOGETHER_API_KEY: str = os.environ["TOGETHER_API_KEY"]
+TOGETHER_API_KEY: str = _require("TOGETHER_API_KEY")
 AI_MODEL: str = os.getenv("AI_MODEL", "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo")
 
 POSITION_FRACTION: float = float(os.getenv("POSITION_FRACTION", "0.95"))

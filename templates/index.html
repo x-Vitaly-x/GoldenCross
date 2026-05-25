@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RogueTrader</title>
+  <title>GoldenCross</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -421,7 +421,7 @@
 <!-- ── LOGIN ─────────────────────────────────────────────── -->
 <div id="login">
   <div class="login-card">
-    <div class="login-logo">RogueTrader</div>
+    <div class="login-logo">GoldenCross</div>
     <div class="login-sub">Enter your dashboard token to continue</div>
     <input type="password" id="token-input" placeholder="Dashboard token" autocomplete="off">
     <button class="btn btn-green" style="width:100%;justify-content:center" onclick="doLogin()">Sign in</button>
@@ -432,7 +432,7 @@
 <!-- ── DASHBOARD ──────────────────────────────────────────── -->
 <div id="dashboard">
   <header>
-    <span class="logo">RogueTrader</span>
+    <span class="logo">GoldenCross</span>
     <div class="header-right">
       <span class="pill" id="market-pill"><span class="dot"></span><span id="market-txt">Market closed</span></span>
       <span class="pill" id="bot-pill"><span class="dot" id="bot-dot"></span><span id="bot-txt">Stopped</span></span>
@@ -539,7 +539,6 @@
 </div>
 
 <script>
-  let token = sessionStorage.getItem('rt_token') || '';
   let ws = null;
   let botRunning = false;
 
@@ -547,15 +546,14 @@
 
   function doLogin() {
     const t = document.getElementById('token-input').value.trim();
-    fetch(`/api/status?token=${encodeURIComponent(t)}`)
+    fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: t }),
+    })
       .then(r => {
-        if (r.ok) {
-          token = t;
-          sessionStorage.setItem('rt_token', token);
-          boot();
-        } else {
-          document.getElementById('login-error').style.display = 'block';
-        }
+        if (r.ok) boot();
+        else document.getElementById('login-error').style.display = 'block';
       })
       .catch(() => { document.getElementById('login-error').style.display = 'block'; });
   }
@@ -578,21 +576,18 @@
     setInterval(loadInstruments, 60_000);
   }
 
-  // On page load — try stored token
-  if (token) {
-    fetch(`/api/status?token=${encodeURIComponent(token)}`)
-      .then(r => { if (r.ok) boot(); else { sessionStorage.removeItem('rt_token'); token = ''; } })
-      .catch(() => {});
-  }
+  // On page load — try cookie-based auto-login
+  fetch('/api/status')
+    .then(r => { if (r.ok) boot(); })
+    .catch(() => {});
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
 
   function connectWs() {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    ws = new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(token)}`);
+    ws = new WebSocket(`${proto}://${location.host}/ws`);
     ws.onopen = () => {
       const box = document.getElementById('log-box');
-      // Clear only the initial "Connecting…" placeholder, not replayed history
       if (box.children.length === 1 && box.firstChild.style?.color === '#475569') {
         box.innerHTML = '';
       }
@@ -617,14 +612,13 @@
   // ── Status ────────────────────────────────────────────────────────────────
 
   function loadStatus() {
-    fetch(`/api/status?token=${encodeURIComponent(token)}`)
+    fetch('/api/status')
       .then(r => r.json()).then(renderStatus).catch(() => {});
   }
 
   function renderStatus(d) {
     botRunning = d.bot_running;
 
-    // Bot pill + button
     const pill = document.getElementById('bot-pill');
     const dot  = document.getElementById('bot-dot');
     const txt  = document.getElementById('bot-txt');
@@ -643,7 +637,6 @@
       btn.textContent = 'Start bot';
     }
 
-    // Market pill
     const mp = document.getElementById('market-pill');
     const mt = document.getElementById('market-txt');
     if (d.market_open) {
@@ -654,7 +647,6 @@
       mt.textContent = 'Market closed';
     }
 
-    // Account
     if (d.account) {
       document.getElementById('v-cash').textContent =
         d.account.cash != null ? `€${Number(d.account.cash).toFixed(2)}` : '—';
@@ -662,7 +654,6 @@
         d.account.total != null ? `Portfolio €${Number(d.account.total).toFixed(2)}` : '';
     }
 
-    // Positions (array)
     const positions = d.positions || [];
     if (positions.length === 0) {
       document.getElementById('v-pos-ticker').textContent = 'No open positions';
@@ -690,7 +681,6 @@
       pnlEl.className = `pnl ${totalPnl >= 0 ? 'pos' : 'neg'}`;
     }
 
-    // Last signal
     if (d.last_decision) {
       const s = d.last_decision;
       document.getElementById('v-sig-price').textContent =
@@ -707,7 +697,7 @@
   // ── Instruments ───────────────────────────────────────────────────────────
 
   function loadInstruments() {
-    fetch(`/api/instruments?token=${encodeURIComponent(token)}`)
+    fetch('/api/instruments')
       .then(r => r.json()).then(renderInstruments).catch(() => {});
   }
 
@@ -743,9 +733,9 @@
   function autoFillName() {
     const yf = document.getElementById('f-yf').value.trim();
     const nameEl = document.getElementById('f-name');
-    if (!yf || nameEl.value.trim()) return;  // skip if yf empty or name already set
+    if (!yf || nameEl.value.trim()) return;
     nameEl.placeholder = 'Looking up name…';
-    fetch(`/api/instruments/name?ticker_yf=${encodeURIComponent(yf)}&token=${encodeURIComponent(token)}`)
+    fetch(`/api/instruments/name?ticker_yf=${encodeURIComponent(yf)}`)
       .then(r => r.json())
       .then(d => {
         nameEl.placeholder = 'Name (e.g. iShares S&P 500)';
@@ -755,8 +745,7 @@
   }
 
   function toggleAddForm() {
-    const form = document.getElementById('add-form');
-    form.classList.toggle('open');
+    document.getElementById('add-form').classList.toggle('open');
   }
 
   function analyseInstrument() {
@@ -769,7 +758,7 @@
     resultEl.classList.remove('visible');
     resultEl.textContent = '';
 
-    fetch(`/api/instruments/analyse?token=${encodeURIComponent(token)}`, {
+    fetch('/api/instruments/analyse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticker_t212: t212, name }),
@@ -790,7 +779,7 @@
     if (!t212 || !yf) { setAddStatus('T212 ticker and yfinance ticker are required'); return; }
 
     setAddStatus('Adding…');
-    fetch(`/api/instruments?token=${encodeURIComponent(token)}`, {
+    fetch('/api/instruments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticker_t212: t212, ticker_yfinance: yf, name }),
@@ -813,18 +802,17 @@
 
   function removeInstrument(ticker) {
     if (!confirm(`Remove ${ticker} from monitored instruments?`)) return;
-    fetch(`/api/instruments/${encodeURIComponent(ticker)}?token=${encodeURIComponent(token)}`,
-      { method: 'DELETE' })
+    fetch(`/api/instruments/${encodeURIComponent(ticker)}`, { method: 'DELETE' })
       .then(() => loadInstruments())
       .catch(() => {});
   }
 
   function toggleInstrument(ticker, enabled) {
-    fetch(`/api/instruments/${encodeURIComponent(ticker)}?token=${encodeURIComponent(token)}`, {
+    fetch(`/api/instruments/${encodeURIComponent(ticker)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ enabled }),
-    }).catch(() => loadInstruments());  // reload on error to reset toggle
+    }).catch(() => loadInstruments());
   }
 
   function setAddStatus(msg) {
@@ -843,7 +831,7 @@
   // ── Tables ────────────────────────────────────────────────────────────────
 
   function loadTables() {
-    fetch(`/api/decisions?token=${encodeURIComponent(token)}`)
+    fetch('/api/decisions')
       .then(r => r.json()).then(rows => {
         const body = document.getElementById('decisions-body');
         if (!rows.length) {
@@ -861,7 +849,7 @@
           </tr>`).join('');
       }).catch(() => {});
 
-    fetch(`/api/trades?token=${encodeURIComponent(token)}`)
+    fetch('/api/trades')
       .then(r => r.json()).then(rows => {
         const body = document.getElementById('trades-body');
         if (!rows.length) {
@@ -891,7 +879,7 @@
 
   function toggleBot() {
     const ep = botRunning ? '/api/bot/stop' : '/api/bot/start';
-    fetch(`${ep}?token=${encodeURIComponent(token)}`, { method: 'POST' })
+    fetch(ep, { method: 'POST' })
       .then(r => r.json())
       .then(() => setTimeout(loadStatus, 500))
       .catch(() => {});

@@ -1,5 +1,5 @@
 """
-RogueTrader dashboard — FastAPI web panel + bot lifecycle manager.
+GoldenCross dashboard — FastAPI web panel + bot lifecycle manager.
 
 Run with:
     python dashboard.py
@@ -21,10 +21,12 @@ from typing import Any
 
 import uvicorn
 from fastapi import (
+    Cookie,
     Depends,
     FastAPI,
     HTTPException,
     Query,
+    Response,
     WebSocket,
     WebSocketDisconnect,
 )
@@ -113,8 +115,10 @@ async def _bot_loop() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not config.DASHBOARD_TOKEN:
-        raise RuntimeError("DASHBOARD_TOKEN must be set in .env before running the dashboard")
+    if len(config.DASHBOARD_TOKEN) < 20:
+        raise RuntimeError(
+            "DASHBOARD_TOKEN is missing or too short — generate one with: openssl rand -hex 24"
+        )
 
     loop = asyncio.get_event_loop()
     handler = _WsLogHandler(loop)
@@ -139,12 +143,25 @@ app = FastAPI(lifespan=lifespan)
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
-def _check_token(token: str = Query(default="")) -> None:
-    if token != config.DASHBOARD_TOKEN:
+def _check_token(gc_session: str = Cookie(default="")) -> None:
+    if gc_session != config.DASHBOARD_TOKEN:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
 # ── Pages ─────────────────────────────────────────────────────────────────────
+
+@app.post("/api/login")
+async def api_login(body: dict, response: Response) -> dict[str, str]:
+    if body.get("token") != config.DASHBOARD_TOKEN:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    response.set_cookie("gc_session", config.DASHBOARD_TOKEN, httponly=True, samesite="strict")
+    return {"status": "ok"}
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
@@ -302,8 +319,8 @@ async def api_analyse_instrument(body: dict) -> dict[str, str]:
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 
 @app.websocket("/ws")
-async def ws_endpoint(ws: WebSocket, token: str = Query(default="")):
-    if token != config.DASHBOARD_TOKEN:
+async def ws_endpoint(ws: WebSocket):
+    if ws.cookies.get("gc_session") != config.DASHBOARD_TOKEN:
         await ws.close(code=4001)
         return
     await ws.accept()

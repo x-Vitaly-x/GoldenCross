@@ -1,5 +1,5 @@
 """
-RogueTrader — hourly trading bot entry point.
+GoldenCross — hourly trading bot entry point.
 
 Each cycle:
   1. Skip if Xetra market is closed
@@ -126,7 +126,9 @@ def run_once():
         log.info("Market closed, skipping")
         return
 
-    for instr in instr_module.enabled_instruments():
+    for i, instr in enumerate(instr_module.enabled_instruments()):
+        if i > 0:
+            time.sleep(1)  # T212 rate limit: 1 req/s on positions endpoint
         try:
             run_instrument(instr)
         except Exception as e:
@@ -142,7 +144,7 @@ if __name__ == "__main__":
     instrs = instr_module.enabled_instruments()
     tickers = ", ".join(i["ticker_t212"] for i in instrs)
     log.info(
-        f"RogueTrader starting | mode={config.T212_MODE} | "
+        f"GoldenCross starting | mode={config.T212_MODE} | "
         f"instruments=[{tickers}] | model={config.AI_MODEL}"
     )
     while True:

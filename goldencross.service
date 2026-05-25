@@ -1,0 +1,17 @@
+[Unit]
+Description=GoldenCross trading bot dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/goldencross
+ExecStart=/opt/goldencross/.venv/bin/python dashboard.py
+Restart=always
+RestartSec=10
+EnvironmentFile=/opt/goldencross/.env
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

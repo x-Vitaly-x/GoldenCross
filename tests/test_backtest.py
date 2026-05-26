@@ -15,68 +15,65 @@ def _make_df(closes: list[float]) -> pd.DataFrame:
                          "close": closes, "volume": 1000}, index=idx)
 
 
-def _oscillating_uptrend(n: int = 200) -> list[float]:
-    """Gentle uptrend with oscillations — golden cross fires with RSI well below overbought."""
-    return [100.0 + i * 0.05 + 3.0 * math.sin(i * 0.3) for i in range(n)]
+def _down_then_oscillating_up(n_warmup: int = 50, n_down: int = 180, n_up: int = 300) -> list[float]:
+    """Downtrend (SMA50 falls below SMA200) then oscillating rally (golden cross fires, RSI < 65)."""
+    warmup = [100.0] * n_warmup
+    down   = [100.0 - i * 0.15 for i in range(n_down)]
+    bottom = down[-1]
+    up     = [bottom + i * 0.12 + 20.0 * math.sin(i * 0.4) for i in range(n_up)]
+    return warmup + down + up
 
 
-def _up_then_down(n_up: int = 60, n_down: int = 40) -> list[float]:
-    """Rally then sell-off — should produce a death cross."""
-    up   = [100.0 + i * 0.5 for i in range(n_up)]
-    down = [up[-1] - i * 0.5 for i in range(n_down)]
-    return up + down
+def _down_up_then_crash() -> list[float]:
+    """Downtrend + oscillating rally (golden cross) + sharp crash (triggers stop-loss)."""
+    base  = _down_then_oscillating_up(n_up=150)
+    peak  = base[-1]
+    crash = [peak - i * 3.0 for i in range(20)]
+    return base + crash
 
 
 # --- simulation smoke tests ---
 
 def test_simulate_returns_equity_same_length_as_df():
-    df = _make_df(_oscillating_uptrend())
+    df = _make_df(_down_then_oscillating_up())
     _, equity = backtest._simulate(df, 1000.0)
     assert len(equity) == len(df)
 
 
 def test_simulate_equity_starts_at_initial_cash():
-    df = _make_df(_oscillating_uptrend())
+    df = _make_df(_down_then_oscillating_up())
     _, equity = backtest._simulate(df, 1000.0)
     assert equity[0] == pytest.approx(1000.0)
 
 
 def test_simulate_produces_buy_on_uptrend():
-    df = _make_df(_oscillating_uptrend(200))
+    df = _make_df(_down_then_oscillating_up())
     trades, _ = backtest._simulate(df, 1000.0)
     buys = [t for t in trades if t.action == "BUY"]
     assert len(buys) >= 1
 
 
 def test_simulate_produces_sell_after_rally_and_drop():
-    df = _make_df(_up_then_down(n_up=70, n_down=50))
+    df = _make_df(_down_up_then_crash())
     trades, _ = backtest._simulate(df, 1000.0)
     sells = [t for t in trades if t.action in ("SELL", "STOP_LOSS")]
     assert len(sells) >= 1
 
 
 def test_simulate_stop_loss_fires_on_sharp_drop():
-    # Buy into uptrend, then drop 20% — well beyond the 10% stop-loss
-    prices = [100.0] * 60 + [100.0 + i * 0.5 for i in range(30)]  # uptrend triggers BUY
-    peak = prices[-1]
-    prices += [peak - i * 2.0 for i in range(40)]  # sharp sell-off
-    df = _make_df(prices)
+    df = _make_df(_down_up_then_crash())
     trades, _ = backtest._simulate(df, 1000.0)
     stops = [t for t in trades if t.action == "STOP_LOSS"]
     assert len(stops) >= 1
 
 
 def test_simulate_no_trades_on_flat_data():
-    # Perfectly flat — no crossover ever fires
-    df = _make_df([100.0] * 120)
+    df = _make_df([100.0] * (strategy.SMA_SLOW + 50))
     trades, _ = backtest._simulate(df, 1000.0)
-    buys = [t for t in trades if t.action == "BUY"]
-    # Trend-continuation entry fires immediately (SMA_fast == SMA_slow on flat data
-    # means the condition sma_fast > sma_slow is False, so no entry expected)
-    assert len(buys) == 0
+    assert len([t for t in trades if t.action == "BUY"]) == 0
 
 
 def test_simulate_equity_never_negative():
-    df = _make_df(_up_then_down())
+    df = _make_df(_down_up_then_crash())
     _, equity = backtest._simulate(df, 1000.0)
     assert all(v >= 0 for v in equity)

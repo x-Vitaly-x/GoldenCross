@@ -8,8 +8,8 @@ HOLD — everything else
 import pandas as pd
 import ta
 
-SMA_FAST = 20
-SMA_SLOW = 50
+SMA_FAST = 50
+SMA_SLOW = 200
 RSI_PERIOD = 14
 RSI_OVERBOUGHT = 65
 RSI_OVERSOLD = 35

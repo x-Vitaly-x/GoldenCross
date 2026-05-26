@@ -19,8 +19,8 @@ The strategy is a simple SMA crossover + RSI filter on hourly candles. The bot i
 
 ## Strategy
 
-**BUY**: SMA20 crosses above SMA50 AND RSI(14) < 65  
-**SELL**: SMA20 crosses below SMA50 AND RSI(14) > 35  
+**BUY**: SMA50 crosses above SMA200 AND RSI(14) < 65  
+**SELL**: SMA50 crosses below SMA200 AND RSI(14) > 35  
 **STOP_LOSS**: current price has fallen ≥ `STOP_LOSS_PCT` below entry price (default 10%)  
 **HOLD**: everything else
 

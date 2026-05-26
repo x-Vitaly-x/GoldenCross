@@ -4,7 +4,7 @@ import pytest
 import strategy
 
 
-def _df(prev_fast, prev_slow, last_fast, last_slow, rsi, n=52):
+def _df(prev_fast, prev_slow, last_fast, last_slow, rsi, n=strategy.SMA_SLOW + 2):
     """Build a DataFrame with pre-set indicator values at the last two rows."""
     return pd.DataFrame(
         {

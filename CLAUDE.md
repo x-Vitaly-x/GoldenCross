@@ -88,8 +88,8 @@ The AI analysis from Together.ai is **logged for later review** but does not ove
 ## Strategy
 
 **SMA crossover + RSI filter** on hourly candles:
-- **BUY**: SMA20 crosses above SMA50 AND RSI < 65
-- **SELL**: SMA20 crosses below SMA50 AND RSI > 35
+- **BUY**: SMA50 crosses above SMA200 AND RSI < 65
+- **SELL**: SMA50 crosses below SMA200 AND RSI > 35
 - **STOP_LOSS**: price has fallen ≥ `STOP_LOSS_PCT` below entry (overrides signal, logged as `STOP_LOSS` in decisions.csv)
 - **HOLD**: everything else
 

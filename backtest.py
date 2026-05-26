@@ -78,11 +78,6 @@ def _simulate(df: pd.DataFrame, initial_cash: float) -> tuple[list[_Trade], list
 
         has_position = position is not None
 
-        # Trend-continuation entry: mirrors main.py
-        if signal == "HOLD" and not has_position:
-            if indicators["sma_fast"] > indicators["sma_slow"] and indicators["rsi"] < strategy.RSI_OVERBOUGHT:
-                signal = "BUY"
-
         # Stop-loss override: mirrors main.py
         stop_loss = False
         if has_position and signal != "SELL" and _is_stop_loss_triggered(position, price):

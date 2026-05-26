@@ -64,12 +64,6 @@ def run_instrument(instr: dict) -> None:
         log.warning(f"[{t212}] Not enough data to generate signal, skipping")
         return
 
-    # Trend-continuation entry: buy into an existing uptrend if we have no position
-    if signal == "HOLD" and not has_position:
-        if indicators["sma_fast"] > indicators["sma_slow"] and indicators["rsi"] < 65:
-            signal = "BUY"
-            log.info(f"[{t212}] Trend-continuation entry: uptrend with no position, overriding to BUY")
-
     # Stop-loss override: force SELL if position has fallen beyond the threshold
     stop_loss_triggered = False
     if has_position and signal != "SELL" and _is_stop_loss_triggered(pos, indicators["price"]):

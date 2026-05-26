@@ -73,7 +73,7 @@ def run_instrument(instr: dict) -> None:
 
     log.info(
         f"[{t212}] Signal={signal} price={indicators['price']} "
-        f"SMA20={indicators['sma_fast']} SMA50={indicators['sma_slow']} "
+        f"SMA50={indicators['sma_fast']} SMA200={indicators['sma_slow']} "
         f"RSI={indicators['rsi']}"
     )
 

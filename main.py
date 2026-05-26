@@ -2,12 +2,11 @@
 GoldenCross — hourly trading bot entry point.
 
 Each cycle:
-  1. Skip if Xetra market is closed
+  1. Skip if NYSE/NASDAQ market is closed
   2. For each enabled instrument:
      a. Fetch hourly OHLCV data
      b. Generate signal (SMA crossover + RSI)
-     c. Override to BUY if in uptrend with no position (trend-continuation entry)
-     d. Get AI commentary (Together.ai)
+     c. Get AI commentary (Together.ai)
      e. Execute trade if signal changed position
      f. Log decision and any trade
 """
@@ -32,13 +31,13 @@ log = logging.getLogger(__name__)
 
 
 def _is_market_open(now: datetime | None = None) -> bool:
-    """Returns True if Xetra is currently open (Mon–Fri, 07:00–15:30 UTC)."""
+    """Returns True if NYSE/NASDAQ is currently open (Mon–Fri, 14:30–21:00 UTC)."""
     if now is None:
         now = datetime.now(timezone.utc)
     if now.weekday() >= 5:
         return False
-    market_open  = now.replace(hour=7,  minute=0,  second=0, microsecond=0)
-    market_close = now.replace(hour=15, minute=30, second=0, microsecond=0)
+    market_open  = now.replace(hour=14, minute=30, second=0, microsecond=0)
+    market_close = now.replace(hour=21, minute=0,  second=0, microsecond=0)
     return market_open <= now < market_close
 
 

@@ -1,8 +1,8 @@
 [
   {
-    "ticker_t212": "VWCEd_EQ",
-    "ticker_yfinance": "VWCE.DE",
-    "name": "Vanguard FTSE All-World UCITS ETF USD Accumulation",
+    "ticker_t212": "QQQ_EQ",
+    "ticker_yfinance": "QQQ",
+    "name": "Invesco QQQ Trust Series 1",
     "enabled": true
   }
 ]

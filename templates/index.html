@@ -408,6 +408,16 @@
     /* ── Misc ── */
     .empty { color: var(--gray); font-size: 0.82rem; padding: 16px 0; text-align: center; }
 
+    .loading {
+      color: var(--gray) !important;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .35; }
+    }
+
     @media (max-width: 780px) {
       .cols-3, .cols-2 { grid-template-columns: 1fr; }
       main { padding: 12px 12px 24px; }
@@ -445,14 +455,14 @@
     <div class="row cols-3">
       <div class="card">
         <div class="card-label">Cash available</div>
-        <div class="card-value" id="v-cash">—</div>
-        <div class="card-sub" id="v-total">Total portfolio —</div>
+        <div class="card-value loading" id="v-cash">Loading…</div>
+        <div class="card-sub loading" id="v-total">Loading…</div>
       </div>
 
       <div class="card">
         <div class="card-label">Positions</div>
-        <div class="card-value" id="v-pos-ticker">No positions</div>
-        <div class="card-sub" id="v-pos-detail">—</div>
+        <div class="card-value loading" id="v-pos-ticker">Loading…</div>
+        <div class="card-sub loading" id="v-pos-detail">Loading…</div>
         <div class="pnl" id="v-pos-pnl"></div>
       </div>
 
@@ -647,14 +657,21 @@
       mt.textContent = 'Market closed';
     }
 
+    const cashEl  = document.getElementById('v-cash');
+    const totalEl = document.getElementById('v-total');
+    cashEl.classList.remove('loading');
+    totalEl.classList.remove('loading');
     if (d.account) {
-      document.getElementById('v-cash').textContent =
-        d.account.cash != null ? `€${Number(d.account.cash).toFixed(2)}` : '—';
-      document.getElementById('v-total').textContent =
-        d.account.total != null ? `Portfolio €${Number(d.account.total).toFixed(2)}` : '';
+      cashEl.textContent  = d.account.cash  != null ? `€${Number(d.account.cash).toFixed(2)}`  : '—';
+      totalEl.textContent = d.account.total != null ? `Portfolio €${Number(d.account.total).toFixed(2)}` : '—';
+    } else {
+      cashEl.textContent  = '—';
+      totalEl.textContent = '—';
     }
 
     const positions = d.positions || [];
+    document.getElementById('v-pos-ticker').classList.remove('loading');
+    document.getElementById('v-pos-detail').classList.remove('loading');
     if (positions.length === 0) {
       document.getElementById('v-pos-ticker').textContent = 'No open positions';
       document.getElementById('v-pos-detail').textContent = '—';
@@ -689,7 +706,7 @@
       badge.textContent = s.signal || '—';
       badge.className = `badge badge-${s.signal || '—'}`;
       document.getElementById('v-sig-ind').textContent =
-        `${s.ticker || ''} · SMA20 ${Number(s.sma_fast).toFixed(2)} · SMA50 ${Number(s.sma_slow).toFixed(2)} · RSI ${Number(s.rsi).toFixed(1)}`;
+        `${s.ticker || ''} · SMA50 ${Number(s.sma_fast).toFixed(2)} · SMA200 ${Number(s.sma_slow).toFixed(2)} · RSI ${Number(s.rsi).toFixed(1)}`;
       document.getElementById('v-sig-ai').textContent = s.ai_reasoning || '';
     }
   }

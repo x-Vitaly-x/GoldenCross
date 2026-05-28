@@ -410,12 +410,14 @@
 
     .loading {
       color: var(--gray) !important;
-      animation: shimmer 1.4s ease-in-out infinite;
+      font-size: 0.95rem !important;
+      font-weight: 400 !important;
+      animation: shimmer 1s ease-in-out infinite;
     }
 
     @keyframes shimmer {
       0%, 100% { opacity: 1; }
-      50%       { opacity: .35; }
+      50%       { opacity: .3; }
     }
 
     @media (max-width: 780px) {

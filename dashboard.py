@@ -165,7 +165,8 @@ async def health() -> dict[str, str]:
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return Path("templates/index.html").read_text()
+    content = Path("templates/index.html").read_text()
+    return HTMLResponse(content=content, headers={"Cache-Control": "no-store"})
 
 
 # ── API ───────────────────────────────────────────────────────────────────────
